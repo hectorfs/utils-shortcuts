@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shortcuts personales</title>
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🔗&lt;/text&gt;&lt;/svg&gt;">
+  <style>
+    :root {
+      --primary: rgba(76, 175, 80, .78);
+      --primary-strong: rgba(76, 175, 80, .96);
+      --ink: #f4f7f5;
+      --muted: rgba(244, 247, 245, .72);
+      --surface: rgba(20, 25, 29, .87);
+      --surface-hover: rgba(55, 67, 72, .97);
+      --border: rgba(255, 255, 255, .25);
+      --danger: #e95b68;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: var(--ink);
+      color-scheme: dark;
+      background: url('fondo.jpg') center / cover fixed no-repeat;
+    }
+    button, input { font: inherit; }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 10px 18px;
+      background: var(--primary);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, .28);
+      backdrop-filter: blur(4px);
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: min(100%, 1440px);
+      margin: auto;
+    }
+    h1 {
+      flex: 1;
+      margin: 0;
+      font-size: 20px;
+      text-shadow: 0 1px rgba(0, 0, 0, .3);
+    }
+    .tabs { display: flex; align-items: center; gap: 7px; }
+    .tab-button, .theme-button, .clear-button, .favorite-toggle {
+      border: 0;
+      cursor: pointer;
+      color: var(--ink);
+      transition: transform .12s ease, background-color .18s ease;
+    }
+    .tab-button {
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(20, 30, 34, .92);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .tab-button[aria-selected="true"] {
+      color: #00ffee;
+      background: var(--primary-strong);
+      box-shadow: 0 2px 5px rgba(250, 10, 46, .72);
+    }
+    .tab-button:hover, .theme-button:hover, .clear-button:hover, .favorite-toggle:hover {
+      transform: translateY(-1px);
+    }
+
+    main { width: min(100%, 1440px); margin: auto; padding: 18px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .toolbar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .search-input {
+      width: min(100%, 500px);
+      padding: 11px 15px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      outline: 0;
+      color: var(--ink);
+      background: var(--surface);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, .35);
+    }
+    .search-input:focus { border-color: var(--primary-strong); box-shadow: 0 0 0 3px rgba(76, 175, 80, .25); }
+    .search-input::placeholder { color: var(--muted); }
+    .search-match {
+      padding: 0 1px;
+      border-radius: 2px;
+      color: #171717;
+      background: #ffe66d;
+    }
+    .count {
+      min-width: max-content;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: var(--surface);
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .groups {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+    #link-groups [data-group="Mail y mensajería"] { order: 1; }
+    #link-groups [data-group="Bancos y tarjetas"] { order: 2; }
+    #link-groups [data-group="Inversiones"] { order: 3; }
+    #link-groups [data-group="Inteligencia artificial"] { order: 4; }
+    #link-groups [data-group="Salud y seguros"] { order: 5; }
+    #link-groups [data-group="Trámites y servicios"] { order: 6; }
+    #link-groups [data-group="Clima"] { order: 7; }
+    #link-groups [data-group="Google y productividad"] { order: 8; }
+    #link-groups [data-group="Storage y transferencias"] { order: 9; }
+    #link-groups [data-group="Pagos y dólar"] { order: 10; }
+    #link-groups [data-group="Traductores"] { order: 11; }
+    #link-groups [data-group="Estudio e idiomas"] { order: 12; }
+    #link-groups [data-group="Seguridad y acceso remoto"] { order: 13; }
+    .group, .favorites {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: rgba(17, 25, 29, .67);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, .45);
+      backdrop-filter: blur(2px);
+    }
+    .favorites { margin-bottom: 14px; }
+    #local-search-results { margin-bottom: 14px; }
+    .favorites .shortcut-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .group-title { margin: 0; font-size: 15px; }
+    .clear-button {
+      padding: 6px 9px;
+      border-radius: 6px;
+      color: #fff;
+      background: rgba(170, 42, 53, .92);
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .clear-button-floating {
+      position: fixed;
+      right: 20px;
+      bottom: 74px;
+      z-index: 20;
+      width: 46px;
+      height: 46px;
+      padding: 0;
+      border-radius: 50%;
+      font-size: 18px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, .45);
+    }
+    .clear-button:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+    }
+    .clear-button:disabled:hover { transform: none; }
+    .shortcut-grid { display: grid; gap: 7px; }
+    .google-translator-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+    .google-translator-row.single { grid-template-columns: minmax(0, 1fr); }
+    .shortcut {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 34px;
+      gap: 6px;
+      min-width: 0;
+    }
+    .shortcut-link {
+      min-width: 0;
+      padding: 10px 11px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--ink);
+      background: var(--surface);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+      transition: transform .12s ease, background-color .18s ease;
+    }
+    .shortcut-link:hover { color: #fff; background: var(--surface-hover); transform: translateY(-1px); }
+    .favorite-toggle {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      font-size: 17px;
+      line-height: 1;
+    }
+    .favorite-toggle[aria-pressed="true"] { color: #ffd762; }
+    .favorite-toggle.remove { color: #fff; background: rgba(170, 42, 53, .9); }
+    .empty-favorites, .empty-search {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .empty-search {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 7px;
+      background: var(--surface);
+      text-align: center;
+      font-weight: bold;
+    }
+    [hidden] { display: none !important; }
+
+    .local-note { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+    .local-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 380px);
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .theme-button {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 20;
+      display: grid;
+      width: 46px;
+      height: 46px;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(20, 30, 34, .94);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, .45);
+      font-size: 20px;
+    }
+
+    body.light-theme {
+      color-scheme: light;
+      --ink: #24282a;
+      --muted: rgba(36, 40, 42, .67);
+      --surface: rgba(255, 255, 255, .88);
+      --surface-hover: #fff;
+      --border: rgba(54, 63, 67, .25);
+    }
+    body.light-theme .group, body.light-theme .favorites { background: rgba(255, 255, 255, .64); }
+    body.light-theme .tab-button:not([aria-selected="true"]), body.light-theme .theme-button { background: rgba(255, 255, 255, .9); color: #141719; }
+    body.light-theme .shortcut-link:hover { color: #111; background: #fff; }
+
+    @media (max-width: 620px) {
+      header { padding: 9px 12px; }
+      .header-bar { align-items: flex-start; }
+      h1 { font-size: 17px; }
+      .tabs { gap: 4px; }
+      .tab-button { padding: 7px 9px; font-size: 12px; }
+      main { padding: 12px; }
+      .toolbar { align-items: stretch; flex-wrap: wrap; }
+      .search-input { width: 100%; }
+      .count { margin: auto; }
+      .favorites .shortcut-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="light-theme">
+  <header>
+    <div class="header-bar">
+      <h1>🔗 Shortcuts</h1>
+      <div class="tabs" role="tablist" aria-label="Secciones">
+        <button class="tab-button" id="tab-links" type="button" role="tab" aria-selected="true" aria-controls="panel-links">🔗 Links</button>
+        <button class="tab-button" id="tab-local" type="button" role="tab" aria-selected="false" aria-controls="panel-local">🏠 Acceso local</button>
+      </div>
+    </div>
+  </header>
+
+  <button id="clear-favorites" class="clear-button clear-button-floating" type="button" aria-label="Limpiar favoritos" title="Limpiar favoritos">🗑</button>
+  <button id="theme-toggle" class="theme-button" type="button" aria-label="Cambiar tema" title="Cambiar tema">☀️</button>
+
+  <main>
+    <section id="panel-links" class="panel active" role="tabpanel" aria-labelledby="tab-links">
+      <div class="toolbar">
+        <input id="links-search" class="search-input" type="search" autocomplete="off" placeholder="Buscar enlace..." aria-label="Buscar enlaces" />
+        <span id="links-count" class="count" aria-live="polite"></span>
+      </div>
+
+      <section class="favorites" id="favorites-section" aria-labelledby="favorites-title">
+        <div class="group-header">
+          <h2 class="group-title" id="favorites-title">⭐ Favoritos</h2>
+        </div>
+        <div id="favorites-list" class="shortcut-grid"></div>
+        <p id="empty-favorites" class="empty-favorites">Agregá hasta 12 accesos con ☆.</p>
+      </section>
+
+      <section id="local-search-results" class="group" hidden aria-labelledby="local-search-title">
+        <div class="group-header"><h2 class="group-title" id="local-search-title">🏠 Acceso local</h2></div>
+        <div id="local-search-list" class="shortcut-grid"></div>
+      </section>
+
+      <div id="link-groups" class="groups">
+        <section class="group" data-group="Bancos y tarjetas">
+          <div class="group-header"><h2 class="group-title">🏦 Bancos y tarjetas</h2></div>
+          <div class="shortcut-grid">
+            <div class="shortcut" data-id="bbva" data-label="BBVA"><a class="shortcut-link" href="https://www.bbva.com.ar/">BBVA</a></div>
+            <div class="shortcut" data-id="galicia" data-label="Galicia"><a class="shortcut-link" href="https://onlinebanking.bancogalicia.com.ar/login">Galicia</a></div>
+            <div class="shortcut" data-id="hsbc" data-label="HSBC"><a class="shortcut-link" href="https://www.hsbc.com.ar/">HSBC</a></div>
+            <div class="shortcut" data-id="icbc" data-label="ICBC"><a class="shortcut-link" href="https://www.accessbanking.com.ar/RetailHomeBankingWeb/init.do?a=b&amp;cm_mmc=icbc-_-access-_-header-_-onlinebanking">ICBC</a></div>
+            <div class="shortcut" data-id="patagonia" data-label="Patagonia"><a class="shortcut-link" href="https://ebankpersonas.bancopatagonia.com.ar/eBanking/usuarios/login.htm">Patagonia</a></div>
+            <div class="shortcut" data-id="santander" data-label="Santander"><a class="shortcut-link" href="https://www.santander.com.ar/personas">Santander</a></div>
+            <div class="shortcut" data-id="visa" data-label="Visa"><a class="shortcut-link" href="https://mistarjetas.prismamediosdepago.com/socios/login">Visa</a></div>
+            <div class="shortcut" data-id="master" data-label="Master"><a class="shortcut-link" href="https://www.misconsultas.com.ar/socios/login">Master</a></div>
+          </div>
+        </section>
+
+        <section class="group" data-group="Pagos y dólar">
+          <div class="group-header"><h2 class="group-title">💳 Pagos y dólar</h2></div>
+          <div class="shortcut-grid">
+            <div class="shortcut" data-id="mercadopago" data-label="MercadoPago"><a class="shortcut-link" href="https://www.mercadopago.com.ar/home">MercadoPago</a></div>
+            <div class="shortcut" data-id="pagomiscuentas" data-label="PagoMisCuentas"><a class="shortcut-link" href="https://paysrv3.pagomiscuentas.com/pmctas/home.do">PagoMisCuentas</a></div>
+            <div class="shortcut" data-id="dolaria" data-label="Dolaria"><a class="shortcut-link" href="https://www.dolaria.com.ar/Public?ReturnUrl=%2F">Dolaria</a></div>
+            <div class="shortcut" data-id="buendolar" data-label="Buendolar"><a class="shortcut-link" href="https://www.buendolar.com/">Buendolar</a></div>
+            <div class="shortcut" data-id="plus-cambio" data-label="Plus Cambio"><a class="shortcut-link" href="https://pluscambio.com.ar/#/home">Plus Cambio</a></div>
+            <div class="shortcut" data-id="convertidor-moneda" data-label="Convertidor de moneda"><a class="shortcut-link" href="https://themoneyconverter.com/ES/">Convertidor moneda</a></div>
+          </div>
+        </section>
+
+        <section class="group" data-group="Inversiones">
+          <div class="group-header"><h2 class="group-title">📈 Inversiones</h2></div>
+          <div class="shortcut-grid">
+            <div class="shortcut" data-id="iol" data-label="IOL invertir online"><a class="shortcut-link" href="https://iol.invertironline.com/MiCuenta/EstadoCuenta">IOL</a></div>
+            <div class="shortcut" data-id="bmb" data-label="BMB Bull Market Brokers"><a class="shortcut-link" href="https://bullmarketbrokers.com/">BMB</a></div>
+            <div class="shortcut" data-id="ppi" data-label="PPI Portfolio Personal"><a class="shortcut-link" href="https://www.portfoliopersonal.com/">PPI</a></div>
+            <div class="shortcut" data-id="tradingview" data-label="TradingView"><a class="shortcut-link" href="https://es.tradingview.com/">TradingView</a></div>
+            <div class="shortcut" data-id="investing" data-label="Investing gráficos"><a class="shortcut-link" href="https://es.investing.com/charts/">Investing</a></div>
+            <div class="shortcut" data-id="spendee" data-label="Spendee"><a class="shortcut-link" href="https://app.spendee.com/auth/login">Spendee</a></div>
+          </div>
+        </section>
+
+        <section class="group" data-group="Storage y transferencias">
+          <div class="group-header"><h2 class="group-title">☁️ Storage y transferencias</h2></div>
+          <div class="shortcut-grid">
+            <div class="shortcut" data-id="google-drive" data-label="Google Drive"><a class="shortcut-link" href="https://drive.google.com/">Google Drive</a></div>
+            <div class="shortcut" data-id="mega" data-label="Mega"><a class="shortcut-link" href="https://mega.nz/">Mega</a></div>
+            <div class="shortcut" data-id="onedrive" data-label="OneDrive"><a class="shortcut-link" href="https://onedrive.live.com/">OneDrive</a></div>
+            <div class="shortcut" data-id="dropbox" data-label="Dropbox"><a class="shortcut-link" href="https://www.dropbox.com/">Dropbox</a></div>
+            <div class="shortcut" data-id="terabox" data-label="Tera"><a class="shortcut-link" href="https://www.terabox.com/">Tera</a></div>
+            <div class="shortcut" data-id="icloud" data-label="iCloud"><a class="shortcut-link" href="https://www.icloud.com/">iCloud</a></div>
+            <div class="shortcut" data-id="drivehq" data-label="DriveHQ"><a class="shortcut-link" href="https://www.drivehq.com/file/Index.aspx#m=folder&amp;view=detail&amp;curPage=1&amp;isGallery=false&amp;share=&amp;shareID=0&amp;parentID=0&amp;search=&amp;parentPath=%5c&amp;fileID=0">DriveHQ</a></div>
+            <div class="shortcut" data-id="google-fotos" data-label="Google Fotos"><a class="shortcut-link" href="https://photos.google.com/">Google Fotos</a></div>
+            <div class="shortcut" data-id="LocalSend" data-label="LocalSend"><a class="shortcut-link" href="https://web.localsend.org/es">LocalSend</a></div>
+            <div class="shortcut" data-id="pairdrop" data-label="PairDrop"><a class="shortcut-link" href="https://pairdrop.net/">PairDrop</a></div>
+            <div class="shortcut" data-id="snapdrop" data-label="Snapdrop"><a class="shortcut-link" href="https://snapdrop.net/">Snapdrop</a></div>
+            <div class="shortcut" data-id="freefilesync" data-label="FreeFileSync"><a class="shortcut-link" href="https://freefilesync.org/">FreeFileSync</a></div>
+          </div>
+        </section>
+
+        <section class="group" data-group="Mail y mensajería">
+          <div class="group-header"><h2 class="group-title">✉️ Mail y mensajería</h2></div>
+          <div class="shortcut-grid">
+            <div class="shortcut" data-id="gmail" data-label="Gmail"><a class="shortcut-link" href="https://mail.google.com/mail/u/0/">Gmail</a></div>
+            <div class="shortcut" data-id="google-calendar" data-label="Google Calendar"><a class="shortcut-link" href="https://calendar.google.com/calendar/u/0/r">Google Calendar</a></div>
+            <div class="shortcut" data-id="outlook" data-label="Outlook"><a class="shortcut-link" href="https://outlook.live.com/mail/0/">Outlook</a></div>
+            <div class="shortcut" data-id="outlook-calendar" data-label="Calendario de Outlook"><a class="shortcut-link" href="https://outlook.live.com/calendar/0/view/week">Calendario Outlook</a></div>
+            <div class="shortcut" data-id="protonmail" data-label="ProtonMail"><a class="shortcut-link" href="https://mail.proton.me/">ProtonMail</a></div>
+            <div class="shortcut" data-id="yahoo" data-label="Yahoo Mail"><a class="shortcut-link" href="https://mail.yahoo.com/">Yahoo Mail</a></div>
+            <div class="shortcut" data-id="office365" data-label="Office 365"><a class="shortcut-link" href="https://outlook.office365.com/">Office 365</a></div>
+            <div class="shortcut" data-id="whatsapp" data-label="WhatsApp Web"><a class="shortcut-link" href="https://web.whatsapp.com/">WhatsApp Web</a></div>
+            <div class="shortcut" data-id="telegram" data-label="Telegram Web"><a class="shortcut-link" href="https://web.telegram.org/">Telegram Web</a></div>
+          </div>
+        </section>
+
+        <section class="group" data-group="Google y productividad">
+          <div class="group-header"><h2 class="group-title">🔎 Google y productividad</h2></div>
+          <div class="shortcut-grid">
+            <div class="shortcut" data-id="google-drive-shared" data-label="Google Drive compartido"><a class="shortcut-link" href="https://drive.google.com/drive/shared-drives">Google Drive compartido</a></div>
+            <div class="shortcut" data-id="google-chat" data-label="Google Chat"><a class="shortcut-link" href="https://mail.google.com/chat/u/0/#chat/home">Google Chat</a></div>
+            <div class="shortcut" data-id="google-meet" data-label="Google Meet"><a class="shortcut-link" href="https://meet.google.com/landing?authuser=0">Google Meet</a></div>
+            <div class="shortcut" data-id="google-docs" data-label="Google Docs"><a class="shortcut-link" href="https://docs.google.com/document">Google Docs</a></div>
+            <div class="shortcut" data-id="google-sheets" data-label="Google Sheets"><a class="shortcut-link" href="https://docs.google.com/spreadsheets">Google Sheets</a></div>
+            <div class="shortcut" data-id="google-slides" data-label="Google Slides"><a class="shortcut-link" href="https://docs.google.com/presentation">Google Slides</a></div>
+            <div class="shortcut" data-id="youtube" data-label="YouTube"><a class="shortcut-link" href="https://www.youtube.com/">YouTube</a></div>
+            <div class="shortcut" data-id="youtube-music" data-label="YouTube Music"><a class="shortcut-link" href="https://music.youtube.com/">YouTube Music</a></div>
+            <div class="shortcut" data-id="looker-studio" data-label="Looker Studio"><a class="shortcut-link" href="https://lookerstudio.google.com">Looker Studio</a></div>
+            <div class="shortcut" data-id="notebooklm" data-label="NotebookLM"><a class="shortcut-link" href="https://notebooklm.google.com">NotebookLM</a></div>
+            <div class="shortcut" data-id="bigquery-console" data-label="BigQuery Console"><a class="shortcut-link" href="https://console.cloud.google.com/bigquery">BigQuery Console</a></div>
+          </div>
+        </section>
+
+        <section class="group" data-group="Traductores">
+          <div class="group-header"><h2 class="group-title">🌐 Traductores</h2></div>
+          <div class="shortcut-grid">
+            <div class="google-translator-row">
+              <div class="shortcut" data-id="translate-pt-es" data-label="Traductor portugués a español"><a class="shortcut-link" href="https://translate.google.com.ar/?sl=pt&amp;tl=es&amp;op=translate">🇧🇷 Traductor</a></div>
+              <div class="shortcut" data-id="translate-en-es" data-label="Traductor inglés a español"><a class="shortcut-link" href="https://translate.google.com.ar/?sl=en&amp;tl=es&amp;op=translate">🇺🇸 Traductor</a></div>
+            </div>
+            <div class="shortcut" data-id="deepl" data-label="DeepL"><a class="shortcut-link" href="https://www.deepl.com/es/translator">DeepL</a></div>
+          </div>
+        </section>
+
+        <section class="group" data-group="Inteligencia artificial">
+          <div class="group-header"><h2 class="group-title">🤖 Inteligencia artificial</h2></div>
+          <div class="shortcut-grid">
+            <div class="shortcut" data-id="chatgpt" data-label="ChatGPT"><a class="shortcut-link" href="https://chatgpt.com">Chat GPT</a></div>
+            <div class="shortcut" data-id="claude" data-label="Claude"><a class="shortcut-link" href="https://claude.ai/">Claude</a></div>
+            <div class="shortcut" data-id="gemini" data-label="Gemini"><a class="shortcut-link" href="https://gemini.google.com">Gemini</a></div>
+            <div class="shortcut" data-id="copilot" data-label="Copilot"><a class="shortcut-link" href="https://github.com/copilot">GitHub Copilot</a></div>
+            <div class="shortcut" data-id="deepseek" data-label="DeepSeek"><a class="shortcut-link" href="https://chat.deepseek.com">DeepSeek</a></div>
+            <div class="shortcut" data-id="perplexity" data-label="Perplexity"><a class="shortcut-link" href="https://www.perplexity.ai/">Perplexity</a></div>
+          </div>
+        </section>
+
+        <section class="group" data-group="Trámites y servicios">
+          <div class="group-header"><h2 class="group-title">🧾 Trámites y servicios</h2></div>
+          <div class="shortcut-grid">
+            <div class="shortcut" data-id="agip" data-label="AGIP"><a class="shortcut-link" href="https://www.agip.gob.ar/pagos-y-boletas">AGIP</a></div>
+            <div class="shortcut" data-id="afip" data-label="AFIP"><a class="shortcut-link" href="https://serviciosweb.afip.gob.ar/ClaveFiscal/ASPAV2/InicioAspa.aspx">AFIP</a></div>
+            <div class="shortcut" data-id="aysa" data-label="AySA"><a class="shortcut-link" href="https://oficinavirtual.web.aysa.com.ar/Ingreso.html">AySA</a></div>
+            <div class="shortcut" data-id="telepase" data-label="TelePASE"><a class="shortcut-link" href="https://autogestion.telepase.com.ar/WebPages/Account/Login">TelePASE</a></div>
+            <div class="shortcut" data-id="edesur" data-label="Edesur"><a class="shortcut-link" href="https://www.edesur.com.ar:8080/OficinaVirtual2/Paginas/identificacionCliente.aspx?accion=-1">Edesur</a></div>
+            <div class="shortcut" data-id="metrogas" data-label="MetroGas"><a class="shortcut-link" href="https://www.metrogas.com.ar/Paginas/descarga-tu-factura.aspx">MetroGas</a></div>
+            <div class="shortcut" data-id="flow" data-label="Flow"><a class="shortcut-link" href="https://web.flow.com.ar/login">Flow</a></div>
+            <div class="shortcut" data-id="personal" data-label="Mi Personal"><a class="shortcut-link" href="https://mipersonal.personal.com.ar/">Mi Personal</a></div>
+            <div class="shortcut" data-id="sube" data-label="SUBE"><a class="shortcut-link" href="https://www.sube.gob.ar/login.aspx">SUBE</a></div>
+            <div class="shortcut" data-id="tad" data-label="Trámites a Distancia"><a class="shortcut-link" href="https://tramitesadistancia.gob.ar/tramitesadistancia/">Trámites a Distancia</a></div>
+            <div class="shortcut" data-id="correo-argentino" data-label="Correo Argentino"><a class="shortcut-link" href="https://epago.correoargentino.com.ar/#/home">Correo Argentino</a></div>
+          </div>
+        </section>
+
+        <section class="group" data-group="Salud y seguros">
+          <div class="group-header"><h2 class="group-title">🩺 Salud y seguros</h2></div>
+          <div class="shortcut-grid">
+            <div class="shortcut" data-id="swiss-medical" data-label="Swiss Medical"><a class="shortcut-link" href="https://www.swissmedical.com.ar/prepagaclientes/login">Swiss Medical</a></div>
+            <div class="shortcut" data-id="cemedic" data-label="Cemedic"><a class="shortcut-link" href="https://cemedic.com.ar/">Cemedic</a></div>
+            <div class="shortcut" data-id="hospital-italiano" data-label="Hospital Italiano"><a class="shortcut-link" href="https://www1.hospitalitaliano.org.ar/PortalWebBeta/#!/login">Hospital Italiano</a></div>
+            <div class="shortcut" data-id="cemic" data-label="Cemic"><a class="shortcut-link" href="https://www.cemic.edu.ar/">Cemic</a></div>
+            <div class="shortcut" data-id="osim" data-label="OSIM"><a class="shortcut-link" href="https://www.osim.com.ar/osim_2016/afiliados_so_credenciales_electronicas.php">OSIM</a></div>
+            <div class="shortcut" data-id="mercantil-andina" data-label="Mercantil Andina"><a class="shortcut-link" href="https://servicios.mercantilandina.com.ar/asegurados/">Mercantil Andina</a></div>
+            <div class="shortcut" data-id="zurich" data-label="Zurich"><a class="shortcut-link" href="https://www.autogestion.zurich.com.ar/Autogestion/AutoGestion/FrmListaPolizasItems.aspx">Zurich</a></div>
+          </div>
+        </section>
+
+        <section class="group" data-group="Estudio e idiomas">
+          <div class="group-header"><h2 class="group-title">📚 Estudio e idiomas</h2></div>
+          <div class="shortcut-grid">
+            <div class="shortcut" data-id="alumni" data-label="Alumni EducaciónIT"><a class="shortcut-link" href="https://alumni.education/">Alumni EducaciónIT</a></div>
+            <div class="shortcut" data-id="coursera" data-label="Coursera"><a class="shortcut-link" href="https://www.coursera.org/">Coursera</a></div>
+            <div class="shortcut" data-id="kennedy" data-label="Kennedy Mi Portal"><a class="shortcut-link" href="https://miportal.kennedy.edu.ar/">Kennedy Mi Portal</a></div>
+            <div class="shortcut" data-id="wordreference" data-label="WordReference"><a class="shortcut-link" href="https://www.wordreference.com/es/">WordReference</a></div>
+          </div>
+        </section>
+
+        <section class="group" data-group="Seguridad y acceso remoto">
+          <div class="group-header"><h2 class="group-title">🔐 Seguridad y acceso remoto</h2></div>
+          <div class="shortcut-grid">
+            <div class="shortcut" data-id="lastpass" data-label="LastPass"><a class="shortcut-link" href="https://lastpass.com/">LastPass</a></div>
+            <div class="shortcut" data-id="password-generator" data-label="Generador de contraseñas"><a class="shortcut-link" href="https://www.lastpass.com/es/features/password-generator">Generador contraseñas</a></div>
+            <div class="shortcut" data-id="password-check" data-label="Verificador de contraseñas"><a class="shortcut-link" href="https://password.kaspersky.com/es/">Verificador contraseñas</a></div>
+            <div class="shortcut" data-id="teamviewer" data-label="TeamViewer"><a class="shortcut-link" href="https://web.teamviewer.com/">TeamViewer</a></div>
+          </div>
+        </section>
+
+        <section class="group" data-group="Clima">
+          <div class="group-header"><h2 class="group-title">🌦️ Clima</h2></div>
+          <div class="shortcut-grid">
+            <div class="shortcut" data-id="smn" data-label="Servicio Meteorológico Nacional"><a class="shortcut-link" href="https://www.smn.gob.ar/">SMN</a></div>
+            <div class="shortcut" data-id="radar-smn" data-label="Radar SMN"><a class="shortcut-link" href="https://www.smn.gob.ar/radar">Radar SMN</a></div>
+            <div class="shortcut" data-id="windy" data-label="Windy"><a class="shortcut-link" href="https://www.windy.com/?-34.602,-58.385,5">Windy</a></div>
+          </div>
+        </section>
+      </div>
+      <p id="empty-search" class="empty-search" hidden>No se encontraron enlaces.</p>
+    </section>
+
+    <section id="panel-local" class="panel" role="tabpanel" aria-labelledby="tab-local">
+      <p class="local-note">Accesos red local.</p>
+      <div class="local-grid">
+        <div class="shortcut" data-id="local-modem-router" data-label="Modem Router"><a class="shortcut-link" href="http://192.168.0.1">Modem</a></div>
+        <div class="shortcut" data-id="local-repeater" data-label="Repetidor Router"><a class="shortcut-link" href="http://192.168.0.2">Repetidor Tenda</a></div>
+        <div class="shortcut" data-id="local-dvr" data-label="DVR"><a class="shortcut-link" href="http://192.168.0.3">DVR</a></div>
+        <div class="shortcut" data-id="local-alarma" data-label="Alarma"><a class="shortcut-link" href="http://192.168.0.4">Alarma</a></div>
+        <div class="shortcut" data-id="local-printer-server" data-label="Printer Server"><a class="shortcut-link" href="http://192.168.0.5">Printer Server</a></div>
+        <div class="shortcut" data-id="local-3d-printer" data-label="3D Printer"><a class="shortcut-link" href="http://192.168.0.6">3D Printer</a></div>
+        <div class="shortcut" data-id="local-tenda-rep" data-label="Repetidor"><a class="shortcut-link" href="http://192.168.0.7">Repetidor Tenda Mobile</a></div>
+        <div class="shortcut" data-id="local-tp-link" data-label="Repetidor TP Link"><a class="shortcut-link" href="http://192.168.0.9">Repetidor TP Link</a></div>
+        <div class="shortcut" data-id="local-esp-frente" data-label="ESP Frente"><a class="shortcut-link" href="http://frente.local">ESP Frente</a></div>
+        <div class="shortcut" data-id="local-esp-parrilla" data-label="ESP Parrilla"><a class="shortcut-link" href="http://parrilla.local">ESP Parrilla</a></div>
+        <div class="shortcut" data-id="local-esp-control" data-label="ESP Control"><a class="shortcut-link" href="http://control.local">ESP Control</a></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const maxFavorites = 12;
+      const favoritesKey = 'shortcuts-home-favorites-v1';
+      const themeKey = 'shortcuts-home-theme';
+      const search = document.getElementById('links-search');
+      const count = document.getElementById('links-count');
+      const emptySearch = document.getElementById('empty-search');
+      const favoritesList = document.getElementById('favorites-list');
+      const emptyFavorites = document.getElementById('empty-favorites');
+      const clearFavorites = document.getElementById('clear-favorites');
+      const localSearchResults = document.getElementById('local-search-results');
+      const localSearchList = document.getElementById('local-search-list');
+      const sourceShortcuts = [...document.querySelectorAll('.shortcut[data-id]')];
+      const shortcutById = new Map(sourceShortcuts.map(item => [item.dataset.id, item]));
+      const localShortcuts = sourceShortcuts.filter(item => item.dataset.id.startsWith('local-'));
+      const linkGroups = [...document.querySelectorAll('#link-groups .group')];
+      const totalLinks = linkGroups.reduce((total, group) => total + group.querySelectorAll('.shortcut').length, 0) + localShortcuts.length;
+
+      function savedFavorites() {
+        try {
+          const value = JSON.parse(localStorage.getItem(favoritesKey) || '[]');
+          return Array.isArray(value) ? value.filter(id => shortcutById.has(id)).slice(0, maxFavorites) : [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      let favorites = savedFavorites();
+
+      function saveFavorites() {
+        try { localStorage.setItem(favoritesKey, JSON.stringify(favorites)); } catch (error) {}
+      }
+
+      function favoriteButton(id, isFavorite) {
+        const button = document.createElement('button');
+        button.className = 'favorite-toggle';
+        button.type = 'button';
+        button.dataset.toggleFavorite = id;
+        button.setAttribute('aria-pressed', String(isFavorite));
+        button.setAttribute('aria-label', isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos');
+        button.title = isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos';
+        button.textContent = isFavorite ? '★' : '☆';
+        return button;
+      }
+
+      function decorateSources() {
+        sourceShortcuts.forEach(shortcut => {
+          shortcut.querySelector('.favorite-toggle')?.remove();
+          const isFavorite = favorites.includes(shortcut.dataset.id);
+          shortcut.append(favoriteButton(shortcut.dataset.id, isFavorite));
+        });
+      }
+
+      function renderFavorites() {
+        favoritesList.replaceChildren();
+        favorites.forEach(id => {
+          const source = shortcutById.get(id);
+          if (!source) return;
+          const sourceLink = source.querySelector('.shortcut-link');
+          const item = document.createElement('div');
+          item.className = 'shortcut favorite-item';
+          item.dataset.favoriteId = id;
+          const link = sourceLink.cloneNode(true);
+          item.append(link);
+          const remove = document.createElement('button');
+          remove.className = 'favorite-toggle remove';
+          remove.type = 'button';
+          remove.dataset.removeFavorite = id;
+          remove.setAttribute('aria-label', 'Quitar ' + source.dataset.label + ' de favoritos');
+          remove.title = 'Quitar de favoritos';
+          remove.textContent = '✕';
+          item.append(remove);
+          favoritesList.append(item);
+        });
+        emptyFavorites.hidden = favorites.length > 0;
+        clearFavorites.disabled = favorites.length === 0;
+        decorateSources();
+        configureLinkTargets();
+      }
+
+      function addOrRemoveFavorite(id) {
+        if (favorites.includes(id)) {
+          favorites = favorites.filter(favoriteId => favoriteId !== id);
+        } else {
+          if (favorites.length >= maxFavorites) {
+            alert('Máximo: ' + maxFavorites + ' favoritos.');
+            return;
+          }
+          favorites.push(id);
+        }
+        saveFavorites();
+        renderFavorites();
+      }
+
+      document.addEventListener('click', event => {
+        const addButton = event.target.closest('[data-toggle-favorite]');
+        if (addButton) {
+          addOrRemoveFavorite(addButton.dataset.toggleFavorite);
+          return;
+        }
+        const removeButton = event.target.closest('[data-remove-favorite]');
+        if (removeButton) {
+          favorites = favorites.filter(id => id !== removeButton.dataset.removeFavorite);
+          saveFavorites();
+          renderFavorites();
+        }
+      });
+
+      clearFavorites.addEventListener('click', () => {
+        if (!confirm('¿Borrar todos los favoritos?')) return;
+        favorites = [];
+        saveFavorites();
+        renderFavorites();
+      });
+
+      function normalize(value) {
+        return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      }
+
+      function highlightMatch(element, text, term) {
+        const characters = Array.from(text);
+        const normalizedCharacters = [];
+        characters.forEach((character, index) => {
+          for (const normalizedCharacter of normalize(character)) {
+            normalizedCharacters.push({ character: normalizedCharacter, sourceIndex: index });
+          }
+        });
+
+        const normalizedText = normalizedCharacters.map(character => character.character).join('');
+        const matchIndex = term ? normalizedText.indexOf(term) : -1;
+        element.replaceChildren();
+        if (matchIndex === -1) {
+          element.textContent = text;
+          return;
+        }
+
+        const start = normalizedCharacters[matchIndex].sourceIndex;
+        const end = normalizedCharacters[matchIndex + term.length - 1].sourceIndex + 1;
+        element.append(document.createTextNode(characters.slice(0, start).join('')));
+        const match = document.createElement('mark');
+        match.className = 'search-match';
+        match.textContent = characters.slice(start, end).join('');
+        element.append(match, document.createTextNode(characters.slice(end).join('')));
+      }
+
+      function renderLocalSearchResults(term) {
+        localSearchList.replaceChildren();
+        if (!term) {
+          localSearchResults.hidden = true;
+          return 0;
+        }
+
+        const matches = localShortcuts.filter(shortcut => normalize(shortcut.dataset.label).includes(term));
+        matches.forEach(source => {
+          const item = document.createElement('div');
+          item.className = 'shortcut';
+          const link = source.querySelector('.shortcut-link').cloneNode(true);
+          highlightMatch(link, link.textContent, term);
+          item.append(link);
+          localSearchList.append(item);
+        });
+        localSearchResults.hidden = matches.length === 0;
+        configureLinkTargets();
+        return matches.length;
+      }
+
+      function filterLinks() {
+        const term = normalize(search.value.trim());
+        let visible = 0;
+        linkGroups.forEach(group => {
+          const groupMatches = normalize(group.dataset.group).includes(term);
+          const title = group.querySelector('.group-title');
+          highlightMatch(title, title.textContent, term);
+          const links = [...group.querySelectorAll('.shortcut')];
+          links.forEach(shortcut => {
+            const matches = groupMatches || normalize(shortcut.dataset.label).includes(term);
+            shortcut.hidden = !matches;
+            const link = shortcut.querySelector('.shortcut-link');
+            highlightMatch(link, link.textContent, term);
+            if (matches) visible += 1;
+          });
+          group.querySelectorAll('.google-translator-row').forEach(row => {
+            const visibleShortcuts = [...row.querySelectorAll('.shortcut')].filter(shortcut => !shortcut.hidden).length;
+            row.hidden = visibleShortcuts === 0;
+            row.classList.toggle('single', visibleShortcuts === 1);
+          });
+          group.hidden = links.every(shortcut => shortcut.hidden);
+        });
+        visible += renderLocalSearchResults(term);
+        [...favoritesList.children].forEach(item => {
+          const source = shortcutById.get(item.dataset.favoriteId);
+          item.hidden = Boolean(term) && !normalize(source.dataset.label).includes(term);
+          const link = item.querySelector('.shortcut-link');
+          highlightMatch(link, link.textContent, term);
+        });
+        count.textContent = visible + ' de ' + totalLinks + ' enlaces';
+        emptySearch.hidden = visible !== 0;
+      }
+
+      search.addEventListener('input', filterLinks);
+      search.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && search.value) {
+          event.preventDefault();
+          search.value = '';
+          search.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      });
+
+      const tabs = [...document.querySelectorAll('.tab-button')];
+      const panels = [...document.querySelectorAll('.panel')];
+      function activate(name) {
+        tabs.forEach(tab => {
+          const selected = tab.id === 'tab-' + name;
+          tab.setAttribute('aria-selected', String(selected));
+          tab.tabIndex = selected ? 0 : -1;
+        });
+        panels.forEach(panel => panel.classList.toggle('active', panel.id === 'panel-' + name));
+        if (name === 'links') setTimeout(() => search.focus({ preventScroll: true }), 0);
+      }
+      tabs.forEach(tab => tab.addEventListener('click', () => activate(tab.id.replace('tab-', ''))));
+
+      const initialTab = new URLSearchParams(window.location.search).get('tab') === 'local' ? 'local' : 'links';
+
+      function configureLinkTargets() {
+        const newTab = new URLSearchParams(window.location.search).get('newTab') !== 'false';
+        document.querySelectorAll('.shortcut-link').forEach(link => {
+          link.target = newTab ? '_blank' : '_self';
+          link.rel = 'noopener noreferrer';
+        });
+      }
+
+      const themeToggle = document.getElementById('theme-toggle');
+      function applyTheme(theme) {
+        const dark = theme === 'dark';
+        document.body.classList.toggle('light-theme', !dark);
+        themeToggle.textContent = dark ? '🌙' : '☀️';
+        themeToggle.setAttribute('aria-label', dark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro');
+        themeToggle.title = themeToggle.getAttribute('aria-label');
+      }
+      let theme = 'light';
+      try { theme = localStorage.getItem(themeKey) || 'light'; } catch (error) {}
+      applyTheme(theme);
+      themeToggle.addEventListener('click', () => {
+        theme = document.body.classList.contains('light-theme') ? 'dark' : 'light';
+        applyTheme(theme);
+        try { localStorage.setItem(themeKey, theme); } catch (error) {}
+      });
+
+      renderFavorites();
+      filterLinks();
+      activate(initialTab);
+      window.addEventListener('load', () => {
+        if (initialTab === 'links') search.focus({ preventScroll: true });
+      });
+    })();
+  </script>
+</body>
+</html>
