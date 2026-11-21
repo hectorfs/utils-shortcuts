@@ -617,7 +617,19 @@
       });
 
       function normalize(value) {
-        return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+      }
+
+      function matchesSearch(shortcut, term) {
+        if (!term) return true;
+        const link = shortcut.querySelector('.shortcut-link');
+        const searchableText = normalize([
+          shortcut.dataset.label || '',
+          shortcut.dataset.id || '',
+          link?.textContent || ''
+        ].join(' '));
+        const termWords = term.split(/\s+/).filter(Boolean);
+        return termWords.every(word => searchableText.includes(word));
       }
 
       function highlightMatch(element, text, term) {
@@ -653,7 +665,7 @@
           return 0;
         }
 
-        const matches = localShortcuts.filter(shortcut => normalize(shortcut.dataset.label).includes(term));
+        const matches = localShortcuts.filter(shortcut => matchesSearch(shortcut, term));
         matches.forEach(source => {
           const item = document.createElement('div');
           item.className = 'shortcut';
@@ -671,12 +683,13 @@
         const term = normalize(search.value.trim());
         let visible = 0;
         linkGroups.forEach(group => {
-          const groupMatches = normalize(group.dataset.group).includes(term);
+          const normalizedGroup = normalize(group.dataset.group);
+          const groupMatches = Boolean(term) && term.split(/\s+/).every(word => normalizedGroup.includes(word));
           const title = group.querySelector('.group-title');
           highlightMatch(title, title.textContent, term);
           const links = [...group.querySelectorAll('.shortcut')];
           links.forEach(shortcut => {
-            const matches = groupMatches || normalize(shortcut.dataset.label).includes(term);
+            const matches = groupMatches || matchesSearch(shortcut, term);
             shortcut.hidden = !matches;
             const link = shortcut.querySelector('.shortcut-link');
             highlightMatch(link, link.textContent, term);
@@ -692,7 +705,7 @@
         visible += renderLocalSearchResults(term);
         [...favoritesList.children].forEach(item => {
           const source = shortcutById.get(item.dataset.favoriteId);
-          item.hidden = Boolean(term) && !normalize(source.dataset.label).includes(term);
+          item.hidden = Boolean(term) && !matchesSearch(source, term);
           const link = item.querySelector('.shortcut-link');
           highlightMatch(link, link.textContent, term);
         });
