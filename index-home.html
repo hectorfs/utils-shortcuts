@@ -315,7 +315,6 @@
           <div class="shortcut-grid">
             <div class="shortcut" data-id="bbva" data-label="BBVA"><a class="shortcut-link" href="https://www.bbva.com.ar/">BBVA</a></div>
             <div class="shortcut" data-id="galicia" data-label="Galicia"><a class="shortcut-link" href="https://onlinebanking.bancogalicia.com.ar/login">Galicia</a></div>
-            <div class="shortcut" data-id="hsbc" data-label="HSBC"><a class="shortcut-link" href="https://www.hsbc.com.ar/">HSBC</a></div>
             <div class="shortcut" data-id="icbc" data-label="ICBC"><a class="shortcut-link" href="https://www.accessbanking.com.ar/RetailHomeBankingWeb/init.do?a=b&amp;cm_mmc=icbc-_-access-_-header-_-onlinebanking">ICBC</a></div>
             <div class="shortcut" data-id="patagonia" data-label="Patagonia"><a class="shortcut-link" href="https://ebankpersonas.bancopatagonia.com.ar/eBanking/usuarios/login.htm">Patagonia</a></div>
             <div class="shortcut" data-id="santander" data-label="Santander"><a class="shortcut-link" href="https://www.santander.com.ar/personas">Santander</a></div>
@@ -329,8 +328,7 @@
           <div class="shortcut-grid">
             <div class="shortcut" data-id="mercadopago" data-label="MercadoPago"><a class="shortcut-link" href="https://www.mercadopago.com.ar/home">MercadoPago</a></div>
             <div class="shortcut" data-id="pagomiscuentas" data-label="PagoMisCuentas"><a class="shortcut-link" href="https://paysrv3.pagomiscuentas.com/pmctas/home.do">PagoMisCuentas</a></div>
-            <div class="shortcut" data-id="dolaria" data-label="Dolaria"><a class="shortcut-link" href="https://www.dolaria.com.ar">Dolaria</a></div>
-            <div class="shortcut" data-id="buendolar" data-label="Buendolar"><a class="shortcut-link" href="https://www.buendolar.com/">Buendolar</a></div>
+            <div class="shortcut" data-id="dolarito" data-label="Dolarito"><a class="shortcut-link" href="https://www.dolarito.ar/">Dolarito</a></div>
             <div class="shortcut" data-id="plus-cambio" data-label="Plus Cambio"><a class="shortcut-link" href="https://pluscambio.com.ar/#/home">Plus Cambio</a></div>
             <div class="shortcut" data-id="convertidor-moneda" data-label="Convertidor de moneda"><a class="shortcut-link" href="https://themoneyconverter.com/ES/">Convertidor moneda</a></div>
           </div>
@@ -396,6 +394,8 @@
             <div class="shortcut" data-id="looker-studio" data-label="Looker Studio"><a class="shortcut-link" href="https://lookerstudio.google.com">Looker Studio</a></div>
             <div class="shortcut" data-id="notebooklm" data-label="NotebookLM"><a class="shortcut-link" href="https://notebooklm.google.com">NotebookLM</a></div>
             <div class="shortcut" data-id="bigquery-console" data-label="BigQuery Console"><a class="shortcut-link" href="https://console.cloud.google.com/bigquery">BigQuery Console</a></div>
+            <div class="shortcut" data-id="fast-com" data-label="Fast.com"><a class="shortcut-link" href="https://fast.com/es/">Fast.com</a></div>
+            <div class="shortcut" data-id="speedtest" data-label="Speedtest"><a class="shortcut-link" href="https://www.speedtest.net/">Speedtest</a></div>
           </div>
         </section>
 
@@ -447,8 +447,6 @@
             <div class="shortcut" data-id="hospital-italiano" data-label="Hospital Italiano"><a class="shortcut-link" href="https://www1.hospitalitaliano.org.ar/PortalWebBeta/#!/login">Hospital Italiano</a></div>
             <div class="shortcut" data-id="cemic" data-label="Cemic"><a class="shortcut-link" href="https://www.cemic.edu.ar/">Cemic</a></div>
             <div class="shortcut" data-id="osim" data-label="OSIM"><a class="shortcut-link" href="https://www.osim.com.ar/osim_2016/afiliados_so_credenciales_electronicas.php">OSIM</a></div>
-            <div class="shortcut" data-id="mercantil-andina" data-label="Mercantil Andina"><a class="shortcut-link" href="https://servicios.mercantilandina.com.ar/asegurados/">Mercantil Andina</a></div>
-            <div class="shortcut" data-id="zurich" data-label="Zurich"><a class="shortcut-link" href="https://www.autogestion.zurich.com.ar/Autogestion/AutoGestion/FrmListaPolizasItems.aspx">Zurich</a></div>
           </div>
         </section>
 
@@ -708,6 +706,28 @@
           event.preventDefault();
           search.value = '';
           search.dispatchEvent(new Event('input', { bubbles: true }));
+          return;
+        }
+        if (event.key === 'Enter' && !event.isComposing) {
+          const visibleLinks = [...document.querySelectorAll('#panel-links .shortcut-link')]
+            .filter(link => !link.closest('[hidden]'));
+          if (visibleLinks.length === 1) {
+            event.preventDefault();
+            visibleLinks[0].click();
+          }
+        }
+      });
+
+      document.addEventListener('keydown', event => {
+        if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'f') {
+          event.preventDefault();
+          let activeSearch = document.querySelector('.panel.active #links-search');
+          if (!activeSearch) {
+            activate('links');
+            activeSearch = search;
+          }
+          activeSearch.focus({ preventScroll: true });
+          activeSearch.select();
         }
       });
 
